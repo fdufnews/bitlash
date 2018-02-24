@@ -377,6 +377,9 @@ void releaseargblock(void) {
 #if defined(TINY_BUILD)
 const prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
 const prog_uchar reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
+#elsif (ENDEEPROM > 2048)
+const prog_char reservedwords[] PROGMEM = { "arg\0boot\0cat\0else\0function\0help\0if\0ll\0ls\0peep\0print\0ps\0return\0rm\0run\0stop\0switch\0while\0" };
+const prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_cat, s_else, s_function, s_help, s_if, s_ll, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_stop, s_switch, s_while };
 #else
 const prog_char reservedwords[] PROGMEM = { "arg\0boot\0else\0function\0help\0if\0ls\0peep\0print\0ps\0return\0rm\0run\0stop\0switch\0while\0" };
 const prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_else, s_function, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_stop, s_switch, s_while };

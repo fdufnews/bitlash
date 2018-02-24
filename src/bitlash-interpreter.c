@@ -336,6 +336,17 @@ numvar retval = 0;
 		else if (sym != s_undef) expected(M_id);
 		getsym();
 	}
+#if (ENDEEPROM > 2048)
+	else if (sym == s_cat){		// cat "sym"
+		getsym();
+		if (sym == s_script_eeprom) {
+			cmd_cat(idbuf);
+		}
+		else if (sym != s_undef) expected(M_id);
+		getsym();
+	}
+	else if (sym == s_ll) 	{ getsym(); cmd_ll(); }
+#endif
 	else if (sym == s_ls) 	{ getsym(); cmd_ls(); }
 #if !defined(TINY_BUILD)
 	else if (sym == s_boot) cmd_boot();

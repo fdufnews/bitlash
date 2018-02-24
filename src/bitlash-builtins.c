@@ -32,8 +32,10 @@
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
 
+	fdufnews 07/2015 added version and release in banner
 ***/
 #include "bitlash.h"
+#include <avr/pgmspace.h>
 
 /**********
 
@@ -64,12 +66,14 @@ like this, from the command line:
 const prog_char builtin_table[] PROGMEM = {
 
 	// The banner must be first.  Add new builtins below.
-	BUILT_IN("banner",	
 #if defined(TINY_BUILD)
+	BUILT_IN("banner",	
 		"print 2+2")
 //		"while 1 {print millis;delay(999);}")
 #else
-		"print \"bitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
+	BUILT_IN("banner",	
+//		"print \"bitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
+		"printf (\"bitlash here! v%1d.%1d (c) 2013 Bill Roy & 2015 fdufnews\n -type HELP- %d bytes free\n\",version,release,free)")
 #endif
 
 	// Add user built-ins here.  Some examples:

@@ -31,10 +31,17 @@
 	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
+	
+	fdufnews 07/2015 added defines for version number (BITLASH_VERSION) and version release (BITLASH_RELEASE)
+	fdufnews 07/2015 added 1284P support
+
 
 ***/
 #ifndef _BITLASH_H
 #define _BITLASH_H
+
+#define BITLASH_VERSION (2)
+#define BITLASH_RELEASE (1)
 
 #if defined(__x86_64__) || defined(__i386__)
 #define UNIX_BUILD 1
@@ -87,7 +94,7 @@
 //
 // Enable LONG_ALIASES to make the parser recognize analogRead(x) as well as ar(x), and so on
 // cost: ~200 bytes flash
-//#define LONG_ALIASES 1
+#define LONG_ALIASES 1
 
 //
 // Enable PARSER_TRACE to make ^T toggle a parser trace debug print stream
@@ -130,8 +137,9 @@
 
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "Arduino.h"
-	#define prog_char char PROGMEM
-	#define prog_uchar char PROGMEM
+	#include <avr/pgmspace.h>
+	#define prog_char PROGMEM char
+	#define prog_uchar PROGMEM char
 #else
 	#include "WProgram.h"
 	#include "WConstants.h"
@@ -223,7 +231,9 @@ void beginEthernet(unsigned long baud) {
 // SANGUINO is auto-enabled to build for the Sanguino '644
 // if the '644 define is present
 //
-#if defined(__AVR_ATmega644P__)
+// fdufnews 07/2015 added 1284P support
+//
+#if defined(__AVR_ATmega644P__) || defined(__AVR_ATmega1284P__)
 #define SANGUINO
 
 //void beginSerial(unsigned long baud) { Serial.begin(baud); }
@@ -248,7 +258,7 @@ void beginEthernet(unsigned long baud) {
 #define DEFAULT_OUTPIN SANGUINO_DEFAULT_SERIAL
 #define ALTERNATE_OUTPIN SANGUINO_ALTERNATE_SERIAL
 
-#endif	// defined (644)
+#endif	// defined (644) and (1284P)
 
 
 ///////////////////////////////////////////////////////
@@ -497,7 +507,11 @@ void initlbuf(void);
 
 // String value buffer size
 #ifdef AVR_BUILD
-  #define STRVALSIZE 120
+	#if defined(__AVR_ATmega644P__) || defined(__AVR_ATmega1284P__)
+		#define STRVALSIZE 512
+	#else
+		#define STRVALSIZE 120
+	#endif
 #else
   #define STRVALSIZE 512
 #endif
@@ -719,8 +733,9 @@ extern numvar fetchptr;		// pointer to current char in input buffer
 extern numvar symval;		// value of current numeric expression
 
 #define USE_GPIORS defined(AVR_BUILD)
-
-#ifndef GPIOR0 || GPIOR1
+// corrected error on #ifndef
+//#ifndef GPIOR0 || GPIOR1
+#if ((!defined GPIOR0) || (!defined GPIOR1))
 	#undef USE_GPIORS
 #endif
 #if (defined USE_GPIORS)
@@ -822,10 +837,12 @@ extern char idbuf[IDLEN+1];
 #define s_returning		(32 | 0x80)
 #define s_arg			(33 | 0x80)
 #define s_else			(34 | 0x80)
-#define s_script_eeprom	(35 | 0x80)
-#define s_script_progmem (36 | 0x80)
-#define s_script_file	(37 | 0x80)
+#define s_script_eeprom		(35 | 0x80)
+#define s_script_progmem 	(36 | 0x80)
+#define s_script_file		(37 | 0x80)
 #define s_comment		(38 | 0x80)
+#define s_ll			(39 | 0x80)
+#define s_cat			(40 | 0x80)
 
 
 // Names for literal symbols: these one-character symbols 

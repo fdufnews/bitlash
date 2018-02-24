@@ -32,6 +32,8 @@
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
 
+	// fdufnews 07/2015 changed data type to suppress a warning in millisUntilNextTask()
+
 ***/
 #include "bitlash.h"
 
@@ -116,7 +118,9 @@ byte i;
 
 unsigned long millisUntilNextTask(void) {
 byte slot;
-	long next_wake_time = millis() + 500L;
+	// fdufnews 07/2015 changed data type to suppress a warning
+	//long next_wake_time = millis() + 500L;
+	unsigned long next_wake_time = millis() + 500L;
 	for (slot=0; slot<NUMTASKS; slot++) {
 		if (tasklist[slot] != SLOT_FREE) {
 			if (waketime[slot] < next_wake_time) next_wake_time = waketime[slot];

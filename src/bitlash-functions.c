@@ -30,6 +30,10 @@
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
 
+	fdufnews 07/2015 added aliasdict, changed pinmode to pm in functiondict
+	fdufnews 07/2015 added functions that return version and release of bitlash
+	version & release are defined in bitlash.h
+
 ***/
 #include "bitlash.h"
 
@@ -84,6 +88,19 @@ numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
 	return 0;
 }
 #endif
+
+// fdufnews 07/2015 added version & release
+/*
+ * Function used to return release of bitlash
+ * BITLASH_VERSION defined in bitlash.h
+ */
+numvar func_version(void){return(BITLASH_VERSION);}
+/*
+ * Function used to return version of bitlash
+ * BITLASH_RELEASE defined in bitlash.h
+ */
+numvar func_release(void){return(BITLASH_RELEASE);}
+
 
 numvar func_free(void) {
 #if defined(UNIX_BUILD)
@@ -263,9 +280,11 @@ const prog_char functiondict[] PROGMEM = {
 //	"printf\0"
 //	"pulsein\0"
 //	"random\0"
+//	"release\0"
 //	"shiftout\0"
 //	"sign\0"
 	"snooze\0"
+//	"version\0"
 };
 
 #else		// standard function set
@@ -296,13 +315,54 @@ const prog_char functiondict[] PROGMEM = {
 	"millis\0"
 	"min\0"
 	"outb\0"
+	"pm\0"
+	"printf\0"
+	"pulsein\0"
+	"random\0"
+	"release\0"
+//	"shiftout\0"
+	"sign\0"
+	"snooze\0"
+	"version\0"
+};
+#endif
+
+#ifdef LONG_ALIASES
+const prog_char aliasdict[] PROGMEM = {
+	"abs\0"
+	"analogread\0"
+	"analogwrite\0"
+	"baud\0"
+	"bitclear\0"
+	"beep\0"
+	"bitreset\0"
+	"bitset\0"
+	"bitwrite\0"
+	"constrain\0"
+	"delay\0"
+	"digitalread\0"
+	"digitalwrite\0"
+	"eepromread\0"
+	"eepromwrite\0"
+	"free\0"
+	"getkey\0"
+	"getnum\0"
+	"inb\0"
+	"isstr\0"
+//	"map\0"
+	"max\0"
+	"millis\0"
+	"min\0"
+	"outb\0"
 	"pinmode\0"
 	"printf\0"
 	"pulsein\0"
 	"random\0"
+	"release\0"
 //	"shiftout\0"
 	"sign\0"
 	"snooze\0"
+	"version\0"
 };
 #endif
 
@@ -340,9 +400,11 @@ const bitlash_function function_table[] PROGMEM = {
 //	func_printf,
 //	func_pulsein,
 //	func_random,
+//	func_release,
 //	func_shiftout,
 //	func_sign,
-	func_snooze 		// last one no comma!
+	func_snooze			// last one no comma!
+//	func_version 		// last one no comma!
  };
 
 #else		// standard function set
@@ -377,9 +439,11 @@ const bitlash_function function_table[] PROGMEM = {
 	func_printf,
 	func_pulsein,
 	func_random,
+	func_release,
 //	func_shiftout,
 	func_sign,
-	func_snooze 		// last one no comma!
+	func_snooze,
+	func_version 		// last one no comma!
  };
 #endif
 

@@ -32,6 +32,13 @@
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
 
+02/2018 fdufnews added conditionnal code for cmd_peep
+*       for processors with EEPROM larger than 2048 bytes peep waits for 2 arguments (starting and ending address)
+        added 'file management', ls, ll, cat (todo)
+               ls list only function name
+               ll list function name, size of function, total size of functions and holes in EEPROM
+               cat funcname print a function (todo)
+
 ***/
 #include "bitlash.h"
 
@@ -223,6 +230,188 @@ void eeputs(int addr) {
 	}
 }
 
+
+/* File management
+ * Functions that dispaly the content of the attribute-value pairs data base
+ * depending on the processor the number of function is different
+ * for small processors :
+ * 	ls: displays avpb content
+ * 	peep: use no argument
+ * for larger processors :
+ * 	ls: displays the name of the functions
+ * 	ll: displays the name and size of the functions and the number and size of holes in the EEPROM
+ * 	cat: displays the code of a function
+ * 	peep use 2 arguments (starting and ending address)
+*/
+#if (ENDEEPROM > 2048)
+#warning compiling file management for large EEPROM
+
+// cmd_ll
+// list the strings in the avpdb
+// long listing with name and size for each program
+// displays holes and their size
+void cmd_ll(void) {
+int start = STARTDB;
+int end;
+int holesize=0;
+int filesize=0;
+int nbFiles=0;
+int nbHoles=0;
+int size=0;
+char buffer[16];
+char *ptr;
+int count=0;
+
+	for (;;) {
+		byte c = eeread(start);
+		if (c==EMPTY){				// We've found a hole in the database
+			end = findoccupied(start); // find next file
+			if (end == FAIL){
+				sp("hole           ");
+				size = ENDEEPROM - start;	// size of the last hole
+				sp(itoa(size,buffer,10));	// print it
+				speol();
+				holesize+=size;			// accumulate hole size
+				nbHoles++;
+				speol();
+				// print number of holes and their size
+				itoa(nbHoles,buffer,10);
+				ptr = buffer;
+				size = 0;
+				while(*(ptr++)) size++;
+				size = 6-size;
+				while(size--) spb(' ');
+				sp(buffer);	// print it
+				sp(" hole(s) for a size of ");
+				sp(itoa(holesize,buffer,10));	// print it
+				sp(" bytes");
+				speol();
+				// print number of files and their size
+				itoa(nbFiles,buffer,10);
+				ptr = buffer;
+				size = 0;
+				while(*(ptr++)) size++;
+				size = 6-size;
+				while(size--) spb(' ');
+				sp(buffer);	// print it
+				sp(" file(s) for a size of ");
+				sp(itoa(filesize,buffer,10));	// print it
+				sp(" bytes");
+				speol();
+				return;
+			}
+			sp("hole           ");
+			size = end - start;		// size of the hole we've found
+			sp(itoa(size,buffer,10));			// print it
+			nbHoles++;
+			holesize+=size;			// accumulate hole size
+			start = end;			// new start
+		} else {					// We've found the beginning of a file
+			eeputs(start);			// print the name of the function
+			end = findend(start);	// end of name
+			int nb = 16-(end-start);
+			while(nb--) spb(' '); 	// fill with space upto 16 places
+			end = findend(end);	// end of function
+			size = end - start;		// size of the file we've found
+			sp(itoa(size,buffer,10));	// print it
+			nbFiles++;
+			filesize+=size;			// accumulate file size
+			start = end;			// new start
+		}
+		if (count & 1)
+			speol();
+		else {
+			if (size>999){
+				sp(   "     |     ");
+			} else if (size>99){
+				sp(  "      |     ");
+			} else if (size>9){
+				sp( "       |     ");
+			} else {
+				sp("        |     ");
+			}
+		}
+		count++;
+	}
+}
+
+// cmd_ls
+// list the name of the functions in the avpdb
+// short listing with only the names
+void cmd_ls(void) {
+int start = STARTDB;
+int end;
+int count=0;
+	for (;;) {
+		// find the next entry
+		start = findoccupied(start);
+		if (start == FAIL) { speol(); return;}
+
+		count++;
+		eeputs(start);				// print name
+		end = findend(start);		// end of name
+		if ((count & 3) !=0){
+			int nb = 16-(end-start);
+			while(nb--) spb(' '); // fill with space upto 16 places
+		} else {
+			speol();
+		}
+		start = findend(end);
+	}
+}
+
+// cmd_cat
+// display the code of a function
+void cmd_cat(char *id){
+	int entry = findKey(id);
+	if (entry == FAIL){
+		unexpected(M_arg);
+	} else {
+		msgp(M_function);
+		spb(' ');
+		eeputs(entry);
+		spb(' ');
+		spb('{');
+		entry = findend(entry);
+		eeputs(entry);
+		spb('}');
+		spb(';');
+		speol();
+	}
+}
+
+//
+// cmd_peep
+// 02/2018 fdufnews added 2 parameters starting and ending address
+// this will help managing processors with large EEPROM where the dump will exceed the size of the display
+//
+void cmd_peep(void) {
+int i=0;
+int end=0;
+
+	i=getnum() & 0xFFFFFFE0;
+	if (i<0 || i>ENDEEPROM) i=0;
+	end=getnum();
+	if (end<i || end>ENDEEPROM) end=ENDEEPROM;
+	while (i <= end) {
+//		if (!(i&63)) {speol(); printHex(i+0xe000); spb(':'); }
+		if (!(i&31)) {speol(); printHex(i+0xe000); spb(':'); }
+		if (!(i&7)) spb(' ');
+		if (!(i&3)) spb(' ');		
+		byte c = eeread(i) & 0xff;
+
+		//if (c == 0) spb('\\');
+		if (c == 0) spb('$');
+		//else if ((c == 255) || (c < 0)) spb('.');
+		else if (c == 255) spb('.');
+		else if (c < ' ') spb('^');
+		else spb(c);
+		i++;
+	}
+	speol();
+}
+
+#else
 // list the strings in the avpdb
 void cmd_ls(void) {
 int start = STARTDB;
@@ -247,7 +436,6 @@ int start = STARTDB;
 
 void cmd_peep(void) {
 int i=0;
-
 	while (i <= ENDEEPROM) {
 		if (!(i&63)) {speol(); printHex(i+0xe000); spb(':'); }
 		if (!(i&7)) spb(' ');
@@ -264,6 +452,6 @@ int i=0;
 	}
 	speol();
 }
-
+#endif
 
 

@@ -16,6 +16,10 @@ function startup {pinmode(4,1); run fadeup,50}; function fadeup {a4=++i&0xff}
 function startup {pinmode(4,1); run fadeupdn,50}; 
 function fadeupdn {if ++i&0x100 a4=i; else a4=~i;}
 
+// Fade up-down (for the 1284):
+function startup {pinmode(15,1); run fadeupdn,50}; 
+function fadeupdn {if ++i&0x100 a15=i); else a15=~i);}
+
 // Time stamper:
 function startup {run stamp,1000} function stamp {printf("Time: %010d\r\n", millis)}
 

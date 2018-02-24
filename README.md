@@ -1,5 +1,33 @@
 # Bitlash Release Notes
 
+## February 24, 2018 fdufnews:
+
+Added support for ATmega1284 (same as ATmega644)
+
+Added version and release functions to print current version of bitlash in the banner
+
+Now version and release are defined in bitlash.h and the functions return the value
+
+Extended file manager for large EEPROM
+- unix like command ll, ls cat
+- peep with 2 arguments on processors with EEPROM larger than 2048
+
+For processors with EEPROM larger than 2048 I have modified peep so that it uses 2 arguments *beginning* and *ending* address so user have some control on the size of what is displayed.
+
+Processors with large EEPROM can hold a huge number of script so ls function can return informations exceeding the size of the screen
+
+For large EEPROM, function ls only list the name of the scripts over 4 columns. For "small" ones the function behaves as earlier
+
+For large EEPROM, there is now:
+- ll which lists name and size of scripts on 2 columns. It also lists the holes in memory and their size.
+- cat *scriptname* is used to display the content of a script.
+
+TODO:
+- [ ] eepack to optimize EEPROM use (by filling the holes)
+- [ ] eeprom emulation in RAM for processors with large RAM (like the 1284)
+	- [ ] adding a cd command to switch from RAM to EEPROM
+	- [ ] adding a copy command to copy scripts between RAM and EEPROM
+
 Questions / Bug Reports / Pull Requests welcome!  https://github.com/billroy/bitlash/issues
 
 ## March 19, 2013: Type checking for string arguments

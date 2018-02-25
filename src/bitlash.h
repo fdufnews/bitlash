@@ -19,10 +19,10 @@
 	copies of the Software, and to permit persons to whom the
 	Software is furnished to do so, subject to the following
 	conditions:
-	
+
 	The above copyright notice and this permission notice shall be
 	included in all copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -31,9 +31,10 @@
 	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
-	
+
 	fdufnews 07/2015 added defines for version number (BITLASH_VERSION) and version release (BITLASH_RELEASE)
 	fdufnews 07/2015 added 1284P support
+	fdufnews 02/2018 added define to enable extended file management
 
 
 ***/
@@ -43,6 +44,11 @@
 #define BITLASH_VERSION (2)
 #define BITLASH_RELEASE (1)
 
+// this define enables extended file manager (with ll, cat, peep with arguments, modified ls behaviour)
+// it makes sense to enable this option on processors with large EEPROM
+// tested on ATmega1284p
+#define EXTENDED_FILE_MANAGER
+
 #if defined(__x86_64__) || defined(__i386__)
 #define UNIX_BUILD 1
 #elif defined(__SAM3X8E__)
@@ -50,8 +56,8 @@
 #elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && defined (CORE_TEENSY)
   // Teensy 3
   #define ARM_BUILD 2
-#elif defined(PART_LM4F120H5QR) //support Energia.nu - Stellaris Launchpad / Tiva C Series 
-#define ARM_BUILD  4 //support Energia.nu - Stellaris Launchpad / Tiva C Series  
+#elif defined(PART_LM4F120H5QR) //support Energia.nu - Stellaris Launchpad / Tiva C Series
+#define ARM_BUILD  4 //support Energia.nu - Stellaris Launchpad / Tiva C Series
 #else
 #define AVR_BUILD 1
 #endif
@@ -171,7 +177,7 @@
 // WIZ-5100 Ethernet shield
 //#define WIZ_ETHERNET 1
 //
-// Enable AF_ETHERNET to build for telnet access to the Adafruit Ethernet shield 
+// Enable AF_ETHERNET to build for telnet access to the Adafruit Ethernet shield
 // configured per the pinout below
 //
 //#define AF_ETHERNET 1
@@ -608,7 +614,7 @@ void spb(char c);
 void sp(const char *);
 void speol(void);
 
-numvar func_printf(void); 
+numvar func_printf(void);
 numvar func_printf_handler(byte,byte);
 
 #ifdef SOFTWARE_SERIAL_TX
@@ -845,7 +851,7 @@ extern char idbuf[IDLEN+1];
 #define s_cat			(40 | 0x80)
 
 
-// Names for literal symbols: these one-character symbols 
+// Names for literal symbols: these one-character symbols
 // are represented by their 7-bit ascii char code
 #define s_semi			';'
 #define s_add			'+'

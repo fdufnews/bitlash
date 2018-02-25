@@ -19,10 +19,10 @@
 	copies of the Software, and to permit persons to whom the
 	Software is furnished to do so, subject to the following
 	conditions:
-	
+
 	The above copyright notice and this permission notice shall be
 	included in all copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -31,6 +31,8 @@
 	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
+	*
+	* fdufnews 02/2018 added EXTENDED_FILE_MANAGER to add some function for extended "file" management
 
 ***/
 #include "bitlash.h"
@@ -149,7 +151,7 @@ signed char nestlevel = 0;
 		}
 	}
 
-	// Skip a single statement, not a statementlist in braces: 
+	// Skip a single statement, not a statementlist in braces:
 	// eat until semicolon or ')'
 	// ignoring embedded argument lists
 	else {
@@ -203,7 +205,7 @@ parsepoint fetchmark;
 	getsym();		// eat "{"
 
 	// we sit before the first statement
-	// scan and discard the <selector>'s worth of statements 
+	// scan and discard the <selector>'s worth of statements
 	// that sit before the one we want
 	while ((which > 0) && (sym != s_eof) && (sym != s_rcurly)) {
 		markparsepoint(&fetchmark);
@@ -258,7 +260,7 @@ numvar retval = 0;
 			}
 		}
 	}
-	
+
 	else if (sym == s_if) {
 		getsym();			// eat "if"
 		if (getnum()) {
@@ -320,7 +322,7 @@ numvar retval = 0;
 			if (background) stopTask(curtask);	// stop with no args stops the current task IF we're in back
 			else initTaskList();				// in foreground, stop all
 		}
-		else 
+		else
 #endif
 			stopTask(getnum());
 	}
@@ -329,14 +331,15 @@ numvar retval = 0;
 		getsym();
 		if (sym == s_script_eeprom) {
 			eraseentry(idbuf);
-		} 
+		}
 #if !defined(TINY_BUILD)
 		else if (sym == s_mul) nukeeeprom();
 #endif
 		else if (sym != s_undef) expected(M_id);
 		getsym();
 	}
-#if (ENDEEPROM > 2048)
+#if defined(EXTENDED_FILE_MANAGER)
+#warning compiling extended file management
 	else if (sym == s_cat){		// cat "sym"
 		getsym();
 		if (sym == s_script_eeprom) {
@@ -365,7 +368,7 @@ numvar retval = 0;
 	//
 	else if (sym == s_colon) {
 		// fetchptr points at the byte count
-		byte byteCount = gethex(2);		// 2 bytes byte count
+		byte byteCount = (2);		// 2 bytes byte count
 		int addr = gethex(4);			// 4 bytes address
 		byte recordType = gethex(2);	// 2 bytes record type; now fetchptr -> data
 		if (recordType == 1) reboot();	// reboot on EOF record (01)

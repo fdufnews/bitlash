@@ -19,10 +19,10 @@
 	copies of the Software, and to permit persons to whom the
 	Software is furnished to do so, subject to the following
 	conditions:
-	
+
 	The above copyright notice and this permission notice shall be
 	included in all copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -32,12 +32,12 @@
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
 
-02/2018 fdufnews added conditionnal code for cmd_peep
-*       for processors with EEPROM larger than 2048 bytes peep waits for 2 arguments (starting and ending address)
-        added 'file management', ls, ll, cat (todo)
+02/2018 fdufnews added EXTENDED_FILE_MANAGER to add some functons for extended "file " management
+ 		cmd_peep peep waits for 2 arguments (starting and ending address)
+        added 'file management', ls, ll, cat
                ls list only function name
                ll list function name, size of function, total size of functions and holes in EEPROM
-               cat funcname print a function (todo)
+               cat funcname print a function
 
 ***/
 #include "bitlash.h"
@@ -95,7 +95,7 @@ int start = STARTDB;
 		start = findoccupied(start);
 		if (start == FAIL) return FAIL;
 
-		// start points to EEPROM id - check for match with id		
+		// start points to EEPROM id - check for match with id
 		if (eestrmatch(start, id)) return start;
 
 		// no match - skip the id and its value and continue scanning
@@ -178,7 +178,7 @@ char id[IDLEN+1];			// buffer for id
 		(sym != s_script_progmem) && (sym != s_script_file)) unexpected(M_id);
 	strncpy(id, idbuf, IDLEN+1);	// save id string through value parse
 	eraseentry(id);
-	
+
 	getsym();		// eat the id, move on to '{'
 
 	if (sym != s_lcurly) expected(s_lcurly);
@@ -196,7 +196,7 @@ char id[IDLEN+1];			// buffer for id
 	do {
 		--endmark;
 	} while ((endmark > startmark) && (*endmark != '}'));
-	
+
 	int idlen = strlen(id);
 	int addr = findhole(idlen + (endmark-startmark) + 2);	// longjmps on fail
 	if (addr >= 0) {
@@ -222,7 +222,7 @@ void eeputs(int addr) {
 		else if (c == '\t') { spb('\\'); spb('t'); }
 		else if (c == '\r') { spb('\\'); spb('r'); }
 		else if ((c >= 0x80) || (c < ' ')) {
-			spb('\\'); spb('x'); 
+			spb('\\'); spb('x');
 			if (c < 0x10) spb('0'); printHex(c);
 		}
 #endif
@@ -243,8 +243,8 @@ void eeputs(int addr) {
  * 	cat: displays the code of a function
  * 	peep use 2 arguments (starting and ending address)
 */
-#if (ENDEEPROM > 2048)
-#warning compiling file management for large EEPROM
+#if defined(EXTENDED_FILE_MANAGER)
+#warning compiling extended file management
 
 // cmd_ll
 // list the strings in the avpdb
@@ -397,7 +397,7 @@ int end=0;
 //		if (!(i&63)) {speol(); printHex(i+0xe000); spb(':'); }
 		if (!(i&31)) {speol(); printHex(i+0xe000); spb(':'); }
 		if (!(i&7)) spb(' ');
-		if (!(i&3)) spb(' ');		
+		if (!(i&3)) spb(' ');
 		byte c = eeread(i) & 0xff;
 
 		//if (c == 0) spb('\\');
@@ -439,7 +439,7 @@ int i=0;
 	while (i <= ENDEEPROM) {
 		if (!(i&63)) {speol(); printHex(i+0xe000); spb(':'); }
 		if (!(i&7)) spb(' ');
-		if (!(i&3)) spb(' ');		
+		if (!(i&3)) spb(' ');
 		byte c = eeread(i) & 0xff;
 
 		//if (c == 0) spb('\\');

@@ -19,10 +19,10 @@
 	copies of the Software, and to permit persons to whom the
 	Software is furnished to do so, subject to the following
 	conditions:
-	
+
 	The above copyright notice and this permission notice shall be
 	included in all copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -31,6 +31,8 @@
 	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
+	*
+	* fdufnews added EXTENDED_FILE_MANAGER to add some functions for "file" management
 
 ***/
 #include "bitlash.h"
@@ -58,7 +60,7 @@ char idbuf[IDLEN+1];
 
 
 
-const prog_char strings[] PROGMEM = { 
+const prog_char strings[] PROGMEM = {
 #if defined(TINY_BUILD)
 	"exp \0unexp \0mssng \0str\0 uflow \0oflow \0\0\0\0exp\0op\0\0eof\0var\0num\0)\0\0eep\0:=\"\0> \0char\0stack\0startup\0id\0prompt\0\r\n\0\0\0"
 #else
@@ -147,8 +149,8 @@ byte isrelop(void) {
 			|| (sym == s_logicaleq) || (sym == s_logicalne)
 			|| (sym == s_gt) || (sym == s_ge));
 }
-byte ishex(char c) { 
-	return ((c >= '0') && (c <= '9')) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')); 
+byte ishex(char c) {
+	return ((c >= '0') && (c <= '9')) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
 }
 byte hexval(char c) {
 	if ((c >= '0') && (c <= '9')) return c - '0';
@@ -338,7 +340,7 @@ void parsearglist(void) {
 
 				// bug: more than 32 args fails here
 				newarg[2] |= (1 << newarg[0]);	// argtype: set string bit for this arg
-			} else 
+			} else
 #endif
 			vpush(getnum());				// push the value
 			newarg[0]++;					// bump the count
@@ -377,7 +379,8 @@ void releaseargblock(void) {
 #if defined(TINY_BUILD)
 const prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
 const prog_uchar reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
-#elsif (ENDEEPROM > 2048)
+#elsif defined(EXTENDED_FILE_MANAGER)
+#warning compiling extended file management
 const prog_char reservedwords[] PROGMEM = { "arg\0boot\0cat\0else\0function\0help\0if\0ll\0ls\0peep\0print\0ps\0return\0rm\0run\0stop\0switch\0while\0" };
 const prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_cat, s_else, s_function, s_help, s_if, s_ll, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_stop, s_switch, s_while };
 #else
@@ -432,10 +435,10 @@ byte pinnum(char id[]) {
 #define PV_VAR 0x40		// bit flag for variable alias
 #define PV_MASK 0x3f
 
-const prog_char pinnames[] PROGMEM = { 
+const prog_char pinnames[] PROGMEM = {
 	"tx\0rx\0led\0vin\0zed\0"
 };
-const prog_uchar pinvalues[] PROGMEM = { 
+const prog_uchar pinvalues[] PROGMEM = {
 	0, 1, 13, (PV_ANALOG | 1), (PV_VAR | 25)
 };
 
@@ -504,11 +507,11 @@ void chrconst(void) {
 
 const prog_char twochartokens[] PROGMEM = { "&&||==!=++--:=>=>><=<<//" };
 const prog_uchar twocharsyms[] PROGMEM = {
-	s_logicaland, s_logicalor, s_logicaleq, s_logicalne, s_incr, 
+	s_logicaland, s_logicalor, s_logicaleq, s_logicalne, s_incr,
 	s_decr, s_define, s_ge, s_shiftright, s_le, s_shiftleft, s_comment
 };
 
-// Parse a one- or two-char operator like >, >=, >>, ...	
+// Parse a one- or two-char operator like >, >=, >>, ...
 void parseop(void) {
 	sym = inchar;		// think horse not zebra
 	fetchc();			// inchar has second char of token or ??
@@ -518,7 +521,7 @@ void parseop(void) {
 	for (;;) {
 		byte c1 = pgm_read_byte(tk++);
 		if (!c1) return;
-		byte c2 = pgm_read_byte(tk++); 
+		byte c2 = pgm_read_byte(tk++);
 
 		if ((sym == c1) && (inchar == c2)) {
 			sym = (byte) pgm_read_byte(twocharsyms + index);
@@ -586,13 +589,13 @@ void parseid(void) {
 		sym = s_nvar;
 		symval = c - 'a';
 	}
-	
+
 	// a pin identifier 'a'digit* or 'd'digit*?
 	else if ((idbuflen <= 3) &&
-		((c == 'a') || (c == 'd')) && 
+		((c == 'a') || (c == 'd')) &&
 		isdigit(idbuf[1]) && (
 #if !defined(TINY_BUILD)
-		isdigit(idbuf[2]) || 
+		isdigit(idbuf[2]) ||
 #endif
 		(idbuf[2] == 0))) {
 		sym = (c == 'a') ? s_apin : s_dpin;
@@ -678,7 +681,7 @@ void parsestring(void (*charFunc)(char)) {
 				case 't': 	inchar = '\t';	break;
 				case 'r':	inchar = '\r';	break;
 
-				case 'x':			// bkslash x hexdigit hexdigit	
+				case 'x':			// bkslash x hexdigit hexdigit
 					fetchc();
 					if (ishex(inchar)) {
 						byte firstnibble = hexval(inchar);
@@ -717,7 +720,7 @@ byte thesym = sym;
 		case s_nval:
 			vpush(thesymval);
 			break;
-			
+
 		case s_nvar:
 			if (sym == s_equals) {		// assignment, push is after the break;
 				getsym();
@@ -809,17 +812,17 @@ byte thesym = sym;
 		case s_add:			// unary plus (like +3) is kind of a no-op
 			getfactor();	// scan a factor and leave its result on the stack
 			break;			// done
-	
+
 		case s_sub:			// unary minus (like -3)
 			getfactor();
 			vpush(-vpop());	// similar to above but we adjust the stack value
 			break;
-	
+
 		case s_bitnot:
 			getfactor();
 			vpush(~vpop());
 			break;
-	
+
 		case s_logicalnot:
 			getfactor();
 			vpush(!vpop());
@@ -847,13 +850,13 @@ byte thesym = sym;
 				getexpression();
 				* (volatile byte *) vpop() = (byte) expval;
 				vpush((numvar) (byte) expval);
-			} 
-			else 
+			}
+			else
 #endif
 			vpush((numvar) (* (volatile byte *) vpop()));
 			break;
 
-		default: 
+		default:
 			unexpected(M_number);
 	}
 

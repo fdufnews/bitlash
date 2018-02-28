@@ -8,24 +8,30 @@ Added version and release functions to print current version of bitlash in the b
 
 Now version and release are defined in bitlash.h and the functions return the value
 
-Extended file manager for large EEPROM
-- unix like command ll, ls cat
+Added a switch in bitlash.h to add an Extended file manager for processors with large RAM and EEPROM
+- unix like command ll, ls, cat, cd, pwd
 - peep with 2 arguments on processors with EEPROM larger than 2048
 
-For processors with EEPROM larger than 2048 I have modified peep so that it uses 2 arguments *beginning* and *ending* address so user have some control on the size of what is displayed.
+In this mode peep expects 2 arguments *beginning* and *ending* address so user have some control on the size of what is displayed.
 
-Processors with large EEPROM can hold a huge number of script so ls function can return informations exceeding the size of the screen
+As processors with large EEPROM can hold a large number of script, in this mode, ls only list the name of the scripts over 4 columns.
 
-For large EEPROM, function ls only list the name of the scripts over 4 columns. For "small" ones the function behaves as earlier
-
-For large EEPROM, there is now:
+Two commands are added:
 - ll which lists name and size of scripts on 2 columns. It also lists the holes in memory and their size.
 - cat *scriptname* is used to display the content of a script.
 
+Addition of an EEPROM emulation in RAM in parallel of the "real" EEPROM. This will save EEPROM during development of new scripts.
+
+The emulated EEPROM has the same size as the EEPROM.
+
+Two commands are added:
+- cd to switch from one "drive" to the other, cd eeprom or cd ram (can be shorten to cd e or cd r)
+- pwd to display the name of the active "drive"
+
 TODO:
 - [ ] eepack to optimize EEPROM use (by filling the holes)
-- [ ] eeprom emulation in RAM for processors with large RAM (like the 1284)
-	- [ ] adding a cd command to switch from RAM to EEPROM
+- [x] eeprom emulation in RAM for processors with large RAM (like the 1284)
+	- [x] adding a cd command to switch from RAM to EEPROM
 	- [ ] adding a copy command to copy scripts between RAM and EEPROM
 
 Questions / Bug Reports / Pull Requests welcome!  https://github.com/billroy/bitlash/issues
@@ -69,8 +75,8 @@ Here is an example sketch with a User Function called echo() that uses isstringa
 	}
 
 	void setup(void) {
-		initBitlash(57600);	
-		addBitlashFunction("echo", (bitlash_function) func_echo);	
+		initBitlash(57600);
+		addBitlashFunction("echo", (bitlash_function) func_echo);
 	}
 
 	void loop(void) {
@@ -240,7 +246,7 @@ Recent Bitlash changes of note:
 
 	- to install, copy the "SDFat" library from the SDFatBeta distribution
 		into the Arduino/libraries directory and restart Arduino
-		
+
 	- open the "bitlashsd" example and upload
 
 	- to disable SDFILE support:
@@ -277,11 +283,11 @@ Recent Bitlash changes of note:
 - EXAMPLE: commands supported in the bitlashsd sd card demo
 
 	dir
-	exists("filename") 
-	del("filename") 
+	exists("filename")
+	del("filename")
 	create("filename", "first line\nsecondline\n")
 	append("filename", "another line\n")
-	type("filename") 
+	type("filename")
 	cd("dirname")
 	md("dirname")
 	fprintf("filename", "format string %s%d\n", "foo", millis);
@@ -342,7 +348,7 @@ the function definition, causing it to fail in use:
 
 The function text is measured more accurately in RC2.
 
-Users are encouraged to upgrade to fix this bug.  
+Users are encouraged to upgrade to fix this bug.
 
 Existing functions may need to be fixed, as well.  Make sure the {} balance.
 
@@ -359,10 +365,10 @@ from within a function will fail silently or worse.  Don't do that.
 	function foo {function bar{print "bar"};bar};
 	function bar {};	<-- sorry, doesn't work in 2.0
 	> bar
-	> 
+	>
 
-This isn't new: Bitlash 1.1 has the same internal implementation limitation, but 
-it was nearly impossible for a human to get the backslash-quote combinations right 
+This isn't new: Bitlash 1.1 has the same internal implementation limitation, but
+it was nearly impossible for a human to get the backslash-quote combinations right
 to attempt the test.
 
 
@@ -418,8 +424,8 @@ to attempt the test.
 
 ## 0.9 -- 23 Nov 2008
 
-- License updated to LGPL 2.1 
-- Added functions: 
+- License updated to LGPL 2.1
+- Added functions:
 	- beep(pin, freq, duration)
 	- shiftout()
 - SOFTWARE_SERIAL_RX: build-time configurable software serial rx on pins D0-D7

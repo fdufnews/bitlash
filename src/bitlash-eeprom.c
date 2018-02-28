@@ -38,6 +38,10 @@
                ls list only function name
                ll list function name, size of function, total size of functions and holes in EEPROM
                cat funcname print a function
+               cd to change active script source either EEPROM or RAM
+               pwd to print current active script source
+
+ todo stop all task running in background before changing the "drive" in cmd_cd
 
 ***/
 #include "bitlash.h"
@@ -237,14 +241,19 @@ void eeputs(int addr) {
  * for small processors :
  * 	ls: displays avpb content
  * 	peep: use no argument
+ */
+#if defined(EXTENDED_FILE_MANAGER)
+#warning compiling extended file management
+/*
  * for larger processors :
  * 	ls: displays the name of the functions
  * 	ll: displays the name and size of the functions and the number and size of holes in the EEPROM
  * 	cat: displays the code of a function
  * 	peep use 2 arguments (starting and ending address)
+ * 	cd to change active source of script (either of EEPROM or RAM)
+ * 	pwd to print the name of the current active source of script
 */
-#if defined(EXTENDED_FILE_MANAGER)
-#warning compiling extended file management
+
 
 // cmd_ll
 // list the strings in the avpdb
@@ -378,6 +387,33 @@ void cmd_cat(char *id){
 		spb(';');
 		speol();
 	}
+}
+
+// cmd_pwd
+// get current working directory
+void cmd_pwd(void){
+	sp(disk==0?"EEPROM":"RAM");
+	speol();
+}
+
+// cmd_cd
+// change active script source
+// source can be EEPROM or RAM
+// we only test the first character so user can enter
+// cd eeprom or cd e
+// cd ram or cd r
+// we shall stop all task running in background before changing the "drive"
+void cmd_cd(char *id){
+	initTaskList();		// stop the tasks running in the background
+	if (id[0] == 'r'){
+		disk = DISK_RAM;
+	}else if (id[0] == 'e'){
+		disk = DISK_EEPROM;
+	}else{
+		unexpected(M_arg);
+	}
+	sp("Drive is ");
+	cmd_pwd();
 }
 
 //

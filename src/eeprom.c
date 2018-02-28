@@ -13,10 +13,10 @@
 	copies of the Software, and to permit persons to whom the
 	Software is furnished to do so, subject to the following
 	conditions:
-	
+
 	The above copyright notice and this permission notice shall be
 	included in all copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -40,43 +40,43 @@
 	// source: https://github.com/IngloriousEngineer/Arduino
 	void extEEPROMreadPage(int EEPROM_addr, int addr, uint8_t* data_target, int amount, int offset)
 	{
-	  Wire.beginTransmission(EEPROM_addr);            
-	  Wire.write(highByte(addr));                     
-	  Wire.write(lowByte(addr));                      
-	  Wire.endTransmission(true);                     
-	  Wire.requestFrom(EEPROM_addr, amount, true);    
-	  
+	  Wire.beginTransmission(EEPROM_addr);
+	  Wire.write(highByte(addr));
+	  Wire.write(lowByte(addr));
+	  Wire.endTransmission(true);
+	  Wire.requestFrom(EEPROM_addr, amount, true);
+
 	  while(Wire.available() == 0)
-	  	{}                 
-	  
+	  	{}
+
 	  for(int i = 0; i<amount; i++)
 	    data_target[offset + i] = Wire.read();
-	}  
+	}
 
 
 	// initializes I2C bus and loads eeprom contents into cache
 	void eeinit(void) {
 		Wire.begin();
-		
+
 		for(int offset=0; offset<=ENDEEPROM; offset+=32) {
-			extEEPROMreadPage(EEPROM_ADDRESS, offset, cache_eeprom, 32, offset); 
+			extEEPROMreadPage(EEPROM_ADDRESS, offset, cache_eeprom, 32, offset);
 		}
 	}
 
 	// write a single byte to eeprom
 	// source: https://github.com/IngloriousEngineer/Arduino
-	void eewrite(int addr, uint8_t value) { 
-		
+	void eewrite(int addr, uint8_t value) {
+
 		// update cache first
 		cache_eeprom[addr] = value;
 
 		// write back to eeprom
 		Wire.beginTransmission(EEPROM_ADDRESS);
-		Wire.write(highByte(addr));           
-		Wire.write(lowByte(addr));            
-		Wire.write((byte) value);             
+		Wire.write(highByte(addr));
+		Wire.write(lowByte(addr));
+		Wire.write((byte) value);
 		Wire.endTransmission(true);
-		delay(6);  
+		delay(6);
 	}
 
 	uint8_t eeread(int addr) { return cache_eeprom[addr]; }
@@ -84,8 +84,30 @@
 #elif (defined(AVR_BUILD)) || ( (defined(ARM_BUILD)) && (ARM_BUILD==2))
 	// AVR or Teensy 3
 	#include "avr/eeprom.h"
+	#if defined(EXTENDED_FILE_MANAGER)
+	/* if EXTENDED_FILE_MANAGER active adds a virtual eeprom
+	 * depending on disk state, use either the EEPROM or the RAM
+	 */
+
+		char virtual_eeprom[E2END];
+
+		void eeinit(void) {
+			for (int i=0; i<E2END; i++) virtual_eeprom[i] = 255;
+		}
+		void eewrite(int addr, uint8_t value) {
+			if (disk == 0){
+				eeprom_write_byte((unsigned char *) addr, value);
+			} else {
+				virtual_eeprom[addr] = value;
+			}
+		}
+		uint8_t eeread(int addr) {
+			return ((disk == 0)? eeprom_read_byte((unsigned char *) addr):virtual_eeprom[addr]);
+		}
+	#else
 	void eewrite(int addr, uint8_t value) { eeprom_write_byte((unsigned char *) addr, value); }
 	uint8_t eeread(int addr) { return eeprom_read_byte((unsigned char *) addr); }
+	#endif
 	#if defined(ARM_BUILD)
 		// Initialize Teensy 3 eeprom
 		void eeinit(void) { eeprom_initialize(); }

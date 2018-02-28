@@ -348,6 +348,15 @@ numvar retval = 0;
 		else if (sym != s_undef) expected(M_id);
 		getsym();
 	}
+	else if (sym == s_cd){		// cd "sym"
+		getsym();			// eat function and get argument
+		cmd_cd(idbuf);
+		getsym();
+	}
+	else if (sym == s_pwd){		// pwd
+		getsym();			// eat function
+		cmd_pwd();
+	}
 	else if (sym == s_ll) 	{ getsym(); cmd_ll(); }
 #endif
 	else if (sym == s_ls) 	{ getsym(); cmd_ls(); }

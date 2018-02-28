@@ -531,6 +531,16 @@ extern char lbuf[LBUFLEN];
 /////////////////////////////////////////////
 // bitlash-eeprom.c
 //
+#define DISK_EEPROM 0
+#define DISK_RAM 1
+
+#if defined(EXTENDED_FILE_MANAGER)
+#warning compiling extended file management
+
+int disk=DISK_EEPROM;
+
+#endif
+
 int findKey(char *key);				// return location of macro keyname in EEPROM or -1
 int getValue(char *key);			// return location of macro value in EEPROM or -1
 
@@ -660,7 +670,10 @@ extern byte suspendBackground;
 #if defined(AVR_BUILD)
 void eewrite(int, byte) __attribute__((noinline));
 byte eeread(int) __attribute__((noinline));
-
+#if defined(EXTENDED_FILE_MANAGER)
+extern char virtual_eeprom[];
+void eeinit(void);
+#endif
 #elif defined(ARM_BUILD)
 void eewrite(int, byte);
 byte eeread(int);
@@ -849,6 +862,8 @@ extern char idbuf[IDLEN+1];
 #define s_comment		(38 | 0x80)
 #define s_ll			(39 | 0x80)
 #define s_cat			(40 | 0x80)
+#define s_cd			(41 | 0x80)
+#define s_pwd			(42 | 0x80)
 
 
 // Names for literal symbols: these one-character symbols

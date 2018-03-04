@@ -35,14 +35,15 @@
 	fdufnews 07/2015 added defines for version number (BITLASH_VERSION) and version release (BITLASH_RELEASE)
 	fdufnews 07/2015 added 1284P support
 	fdufnews 02/2018 added define to enable extended file management
+	fdufnews 03/2018 changed version.release to 3.0
 
 
 ***/
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
-#define BITLASH_VERSION (2)
-#define BITLASH_RELEASE (1)
+#define BITLASH_VERSION (3)
+#define BITLASH_RELEASE (0)
 
 // this define enables extended file manager (with ll, cat, peep with arguments, modified ls behaviour)
 // it makes sense to enable this option on processors with large EEPROM
@@ -864,6 +865,7 @@ extern char idbuf[IDLEN+1];
 #define s_cat			(40 | 0x80)
 #define s_cd			(41 | 0x80)
 #define s_pwd			(42 | 0x80)
+#define s_cp			(43 | 0x80)
 
 
 // Names for literal symbols: these one-character symbols

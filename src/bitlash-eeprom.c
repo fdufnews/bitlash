@@ -40,8 +40,8 @@
                cat funcname print a function
                cd to change active script source either EEPROM or RAM
                pwd to print current active script source
+               cp to copy a script from current "drive" to the other one
 
- todo stop all task running in background before changing the "drive" in cmd_cd
 
 ***/
 #include "bitlash.h"
@@ -252,6 +252,7 @@ void eeputs(int addr) {
  * 	peep use 2 arguments (starting and ending address)
  * 	cd to change active source of script (either of EEPROM or RAM)
  * 	pwd to print the name of the current active source of script
+ * 	cp to copy a script from current "drive" to the other one
 */
 
 
@@ -397,7 +398,7 @@ void cmd_pwd(void){
 }
 
 // cmd_cd
-// change active script source
+// change active drive (script source)
 // source can be EEPROM or RAM
 // we only test the first character so user can enter
 // cd eeprom or cd e
@@ -414,6 +415,88 @@ void cmd_cd(char *id){
 	}
 	sp("Drive is ");
 	cmd_pwd();
+}
+
+//
+// getString
+// arguments
+//		start starting point in drive source (EEPROM or virtual EEPROM)
+//		buf pointer to buffer in which string will be copied
+//		maxsize size of copy buffer
+void getString(int start, char *buf, int maxsize){
+	int size=0;
+	uint8_t c;
+	char *ptr = buf;
+	do{
+		c = eeread(start + size++);
+		*ptr++ = c;
+	}while((size < maxsize) && c!=0);
+	*ptr=0;		// tag end of string
+}
+
+//
+// copy
+// argument is index of script ID in source (either RAM or EEPROM)
+// source is on the active drive, destination is on the other drive
+int copy(int addrs){
+	char id[IDLEN+1];			// buffer for id
+	uint8_t buf[STRVALSIZE];
+	int source = addrs; // index of source
+	int end = 0;		// end of source
+	int size = 0;		// size of source
+	int dest = 0;		// index for destination
+
+	end = findend(source);	// we'll get end of ID
+	end = findend(end);		// that's end of script
+	size = end - source;	// size of the script to copy
+
+	getString(source,id, IDLEN);	// copy id string from source to id buffer
+	disk = disk ^ 1;		// disk is either 1 or 0 so switch from source to destination
+	eraseentry(id);			// in case ID allready exists in destination erase it
+	dest = findhole(size);	// get the index of a hole large enough to copy or FAIL
+	if (dest == FAIL){
+		overflow(M_eeprom);	// no more room on the drive
+	}
+	disk = disk ^ 1;		// switch to the source drive
+	for(int index= 0; index < size; index++){
+		buf[index] = eeread(source + index); // fill buffer with the script
+	}
+	disk = disk ^ 1;		// switch to the destination drive
+	for(int index= 0; index < size; index++){
+		eewrite(dest + index, buf[index]); // copy buffer in the destination drive
+	}
+	disk = disk ^ 1;		// switch to the source drive
+	return(source + size);	// return address pointing to the end of the source
+}
+
+//
+// cmd_cp
+// copy a script or all the scripts from one "drive" to the other
+// the source is the current drive the destination is the other one
+// cp scriptname or cp *
+// we shall stop all task running in background because the "drives" will switch during copy
+void cmd_cp(void){
+	int entry;
+	boolean all=false;
+	char *id = (char*)++fetchptr;		// get current position in input buffer
+	if (id[0]=='*'){			// if copy all scripts
+		entry = findoccupied(0) ;	// search the first script starting from index 0 of drive
+		all = true;
+	}
+	else {
+		entry = findKey(id);	// get address of script
+	}
+	if (entry == FAIL) unexpected(M_arg); // unknown script or no script
+	initTaskList();				// stop running tasks before switching drives
+	do{
+		sp("Copying "); eeputs(entry); speol();
+		entry = copy(entry);
+		if (all){
+			entry = findoccupied(entry);	// get address of next script or FAIL
+		}
+	}while(all && entry!=FAIL);
+	while(*(char*)fetchptr++);	// skip argument
+	*(char*)fetchptr--=0;
 }
 
 //
@@ -448,6 +531,8 @@ int end=0;
 }
 
 #else
+// -----------standard file manager ----------------------
+//
 // list the strings in the avpdb
 void cmd_ls(void) {
 int start = STARTDB;

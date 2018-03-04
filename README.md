@@ -1,5 +1,14 @@
 # Bitlash Release Notes
 
+## March 4, 2018 fdufnews:
+
+Added a copy command cp.
+
+cp scriptname copy script with scriptname from current "drive" to the other one
+cp * copy all the scripts from current "drive" to the other one
+
+Changed version and release to 3.0 to state end of development of the extended file manager
+
 ## February 24, 2018 fdufnews:
 
 Added support for ATmega1284 (same as ATmega644)
@@ -32,7 +41,7 @@ TODO:
 - [ ] eepack to optimize EEPROM use (by filling the holes)
 - [x] eeprom emulation in RAM for processors with large RAM (like the 1284)
 	- [x] adding a cd command to switch from RAM to EEPROM
-	- [ ] adding a copy command to copy scripts between RAM and EEPROM
+	- [x] adding a copy command to copy scripts between RAM and EEPROM
 
 Questions / Bug Reports / Pull Requests welcome!  https://github.com/billroy/bitlash/issues
 

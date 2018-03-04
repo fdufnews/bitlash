@@ -357,6 +357,10 @@ numvar retval = 0;
 		getsym();			// eat function
 		cmd_pwd();
 	}
+	else if (sym == s_cp){		// cp
+		cmd_cp();
+		getsym();
+	}
 	else if (sym == s_ll) 	{ getsym(); cmd_ll(); }
 #endif
 	else if (sym == s_ls) 	{ getsym(); cmd_ls(); }
